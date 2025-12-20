@@ -2,7 +2,6 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const connectDB = require("./config/db");
-const mongoose = require("mongoose");
 
 const authRoutes = require('./routes/authRoutes');
 const invoiceRoutes = require('./routes/invoiceRoutes');
@@ -28,8 +27,10 @@ app.get("/", (req, res) => {
   res.json({ 
     message: "API is running...",
     timestamp: new Date().toISOString(),
-    database: {
-      status: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
+    env: {
+      hasJWT: !!process.env.JWT_SECRET,
+      hasMongo: !!process.env.MONGO_URI,
+      nodeEnv: process.env.NODE_ENV
     }
   });
 });
@@ -37,43 +38,20 @@ app.get("/", (req, res) => {
 // Database connection
 let dbConnected = false;
 
-const initializeDB = async () => {
+app.use(async (req, res, next) => {
   if (!dbConnected) {
     try {
       await connectDB();
       dbConnected = true;
-      console.log('✓ Database connected');
-      
-      // Keep-alive ping every 5 minutes
-      setInterval(async () => {
-        try {
-          if (mongoose.connection.readyState === 1) {
-            await mongoose.connection.db.admin().ping();
-            console.log('✓ Database keep-alive ping');
-          }
-        } catch (error) {
-          console.error('✗ Keep-alive ping failed:', error.message);
-        }
-      }, 5 * 60 * 1000); // 5 minutes
-      
     } catch (error) {
-      console.error('✗ Database connection failed:', error);
-      throw error;
+      console.error('Database connection failed:', error);
+      return res.status(500).json({ 
+        error: "Database connection failed",
+        message: error.message 
+      });
     }
   }
-};
-
-app.use(async (req, res, next) => {
-  try {
-    await initializeDB();
-    next();
-  } catch (error) {
-    console.error('Database initialization error:', error);
-    res.status(500).json({ 
-      error: "Database connection failed",
-      message: error.message 
-    });
-  }
+  next();
 });
 
 // Routes
@@ -96,5 +74,5 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Export for Vercel
+// CRITICAL: Export for Vercel (DO NOT USE app.listen())
 module.exports = app;
