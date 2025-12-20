@@ -13,7 +13,11 @@ const app = express();
 // CORS Configuration
 app.use(
   cors({
-    origin: ["https://vercel-front-ten.vercel.app", "http://localhost:5173"],
+    origin: [
+      "https://vercel-front-ten.vercel.app",
+      "http://localhost:5173",
+      /https:\/\/vercel-front.*\.vercel\.app$/, // This allows all preview URLs
+    ],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true
