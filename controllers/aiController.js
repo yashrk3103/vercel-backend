@@ -133,18 +133,19 @@ function buildFallbackReminder(invoice) {
   const dueDate = invoice?.dueDate ? new Date(invoice.dueDate).toLocaleDateString() : "the due date";
   const businessName = invoice?.billFrom?.businessName || "Our Company";
 
-  return `Subject: Payment Reminder - Invoice #${invoiceNumber}
+  return `Subject: Reminder: Invoice #${invoiceNumber} Due on ${dueDate}
 
 Hi ${clientName},
 
-I hope you're doing well. This is a friendly reminder that Invoice #${invoiceNumber} for $${amount} is due on ${dueDate}.
+This is a reminder that Invoice #${invoiceNumber} for $${amount} is scheduled for payment on ${dueDate}.
 
-If you have any questions or need additional information, please don't hesitate to reach out.
+If the payment has already been processed, please disregard this message. Otherwise, we request you to complete the payment as per the agreed terms.
 
-Thank you for your prompt attention to this matter.
+For any clarification regarding this invoice, feel free to contact us.
 
-Best regards,
+Regards,  
 ${businessName}`;
+
 }
 
 const generateReminderEmail = async (req, res) => {
