@@ -50,7 +50,16 @@ exports.loginUser = async (req, res) => {
   const { email, password } = req.body;
 
   try {
+    // Add validation
+    if (!email || !password) {
+      return res.status(400).json({ message: "Please provide email and password" });
+    }
+
+    console.log('Login attempt for:', email);
+
     const user = await User.findOne({ email }).select("+password");
+
+    console.log('User found:', !!user);
 
     if (user && (await user.matchPassword(password))) {
       res.json({
@@ -58,7 +67,6 @@ exports.loginUser = async (req, res) => {
         name: user.name,
         email: user.email,
         token: generateToken(user._id),
-
         businessName: user.businessName || "",
         address: user.address || "",
         phone: user.phone || "",
@@ -67,7 +75,11 @@ exports.loginUser = async (req, res) => {
       res.status(401).json({ message: "Invalid credentials" });
     }
   } catch (error) {
-    res.status(500).json({ message: "Server error" });
+    console.error('Login error:', error);
+    res.status(500).json({ 
+      message: "Server error",
+      error: error.message 
+    });
   }
 };
 
